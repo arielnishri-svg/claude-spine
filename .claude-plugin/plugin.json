@@ -3,8 +3,7 @@
   "version": "0.1.0",
   "description": "A personal OS for Claude Cowork. Daily brief from Gmail + Calendar, investment research, autonomous overnight builder, and a Drive spine that keeps context alive across Claude Chat and Cowork.",
   "author": {
-    "name": "Ariel Nishri",
-    "homepage": "https://cogniqos.substack.com"
+    "name": "Ariel Nishri"
   },
   "keywords": ["productivity", "daily-brief", "investment-research", "personal-os", "context-management"]
 }
