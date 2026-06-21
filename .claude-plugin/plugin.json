@@ -1,7 +1,7 @@
 {
   "name": "mission-control",
   "version": "0.1.0",
-  "description": "A personal OS for Claude Cowork. Daily brief from Gmail + Calendar, investment research, autonomous overnight builder, and a Drive spine that keeps context alive across Claude Chat and Cowork.",
+  "description": "A context-persistence pattern for Claude. Three Google Drive docs (NOW, DECISIONS, OPEN) keep your state alive across Claude Cowork, Claude Chat, and Claude Code — without re-explaining anything.",
   "author": {
     "name": "Ariel Nishri"
   },

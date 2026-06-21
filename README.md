@@ -1,153 +1,91 @@
-# Mission Control
+# Claude Spine
 
-A personal OS plugin for Claude Cowork. Unifies your daily calendar, inbox, and investments into a single morning brief — and keeps your context alive when you switch between Cowork and Claude Chat.
-
-![Mission Control dashboard](screenshot.png)
+A context-persistence pattern for Claude. Keeps your state alive when you switch between Claude Cowork, Claude Chat, and Claude Code — without re-explaining anything.
 
 ---
 
-## What it does
+## The problem
 
-| Say this | What happens |
-|----------|-------------|
-| `set up mission control` | One-time setup: creates folder structure, seeds files, connects Drive spine |
-| `generate my morning brief` | Pulls Google Calendar + Gmail → writes a structured daily brief |
-| `research AAPL` | Web search + analyst data + thesis fit check → research note saved to dashboard.md |
-| `wrap up session` | Updates Drive spine (NOW / DECISIONS / OPEN) + daily-log.md |
-| `check the build queue` | Picks up PRDs from pending/ and builds them |
+Every Claude session starts cold. Switch from Cowork to Chat, or open Claude Code in a new terminal, and you lose everything — what you were working on, what you decided, what's still open. You end up spending the first few minutes of every session re-establishing context that should already be there.
 
 ---
 
-## The spine — what makes this different
+## The pattern
 
-Most AI context lives and dies in a single session. Mission Control uses three small Google Drive files as a shared memory layer across Claude Cowork, Claude Chat, and eventually Claude Code:
+Three small Google Drive documents act as a shared memory layer across all Claude tools:
 
-- **NOW.md** — what's active today, current state of every project
-- **DECISIONS.md** — append-only log of locked decisions and their reasoning
-- **OPEN.md** — live list of unresolved questions and next steps
+| Doc | What it holds | How it's updated |
+|-----|--------------|-----------------|
+| **NOW** | Current state — active projects, focus, system status | Overwritten each session |
+| **DECISIONS** | Append-only log of locked decisions and their reasoning | Never edited, only appended |
+| **OPEN** | Live list of unresolved questions and next steps | Items added and removed as they resolve |
 
-Cowork writes to these files. Claude Chat reads them (via a Claude Project connected to Drive). You switch to Opus in Chat for deep reasoning — and it already knows your world without you re-explaining anything.
+**Cowork writes. Chat reads.**
+
+At the end of every Cowork session, the `wrap up session` skill updates all three docs. In Claude Chat, a Project linked to these Drive files gives Opus full context before you type a single word. Claude Code can read the local copies directly.
 
 ---
 
-## Setup
+## How to use it
 
-### 1. Install the plugin
-Install this `.plugin` file in Cowork (Settings → Plugins → Install from file).
+### 1. Create the three docs in Google Drive
 
-### 2. Connect your Google services
-In Cowork Settings → Connectors:
-- Connect **Gmail**
-- Connect **Google Calendar**
-- Connect **Google Drive**
+Create three Google Docs named `NOW`, `DECISIONS`, and `OPEN`. Keep them in a folder called `_spine`.
+
+### 2. Install this plugin in Cowork
+
+Install the `.plugin` file in Cowork (Settings → Plugins → Install from file). Connect Gmail, Google Calendar, and Google Drive in Settings → Connectors.
 
 ### 3. Run setup
-In a new Cowork session, say: `set up mission control`
 
-The setup skill will:
-- Create your folder structure
-- Ask for your name, email, time zone, and active projects
-- Seed your memory and skill files
-- Create the Drive spine (NOW, DECISIONS, OPEN)
+Say `set up mission control` in a new Cowork session. The setup skill creates your folder structure, seeds your memory files, and links the Drive spine docs.
 
 ### 4. Connect Drive to Claude Chat
-In [claude.ai](https://claude.ai):
-1. Go to Projects → New Project → name it "Mission Control"
-2. Click Add content → Google Drive
-3. Add the NOW, DECISIONS, and OPEN docs
-4. Use this Project for any Chat session where you want context continuity
+
+In [claude.ai](https://claude.ai) → Projects → New Project:
+1. Add content → Google Drive
+2. Add the `NOW`, `DECISIONS`, and `OPEN` docs
+3. Use this project for any Chat session where you want context continuity
+
+### 5. Wrap up every session
+
+Say `wrap up session` before closing Cowork. This is the habit the whole system depends on. A stale `NOW` means Chat reasons from wrong premises.
 
 ---
 
-## Connectors required
+## What ships with this plugin
 
-| Connector | Used by | Required? |
-|-----------|---------|-----------|
-| Gmail | Morning brief (inbox priorities) | Yes for brief |
-| Google Calendar | Morning brief (today's events) | Yes for brief |
-| Google Drive | Drive spine (NOW / DECISIONS / OPEN) | Yes for cross-tool context |
+The plugin includes five skills as a working reference implementation:
 
----
+| Say this | What it does |
+|----------|-------------|
+| `set up mission control` | One-time setup — folder structure, memory files, Drive spine |
+| `generate my morning brief` | Pulls Google Calendar + Gmail → structured daily brief |
+| `research AAPL` | Web search + analyst consensus + thesis fit → research note |
+| `wrap up session` | Updates NOW / DECISIONS / OPEN + appends to daily log |
+| `check the build queue` | Picks up PRD files from a queue folder and builds them |
 
-## Folder structure created on setup
-
-```
-~/Documents/Claude Cowork/cowork/
-├── memory/
-│   ├── global.md           # Cross-project context (not committed to git)
-│   └── daily-log.md        # Session log (not committed to git)
-├── projects/
-│   ├── daily-digest/
-│   │   └── brief.md        # Today's brief (overwritten daily)
-│   └── investments/        # Optional module
-│       ├── portfolio.md    # Holdings + thesis
-│       └── dashboard.md    # Research outputs
-├── autonomous-builder/
-│   ├── pending/            # Drop PRDs here
-│   ├── done/               # Completed outputs
-│   ├── failed/             # Failed builds with error notes
-│   └── logs/               # Build history
-└── mission-control.md      # System reference
-```
-
----
-
-## The investments module (optional)
-
-Fill in `projects/investments/portfolio.md` with your holdings and investing philosophy. The `research` skill reads this file to check whether a stock fits your criteria before writing its verdict.
-
-You don't need to use this module — the brief and builder work without it.
-
----
-
-## The autonomous builder
-
-Drop a markdown file into `autonomous-builder/pending/` named `YYYY-MM-DD-description.md`:
-
-```markdown
-# Weekly Portfolio Summary
-
-## Goal
-Write a one-page summary of my portfolio performance for the week.
-
-## Output
-- Format: md
-- Filename: 2026-06-28-portfolio-week.md
-
-## Data sources
-- Read projects/investments/portfolio.md
-- Web search current prices for each ticker
-
-## Constraints
-- One page, concise, no filler
-```
-
-Say `check the build queue` (or set up a 30-minute scheduled task) and it builds while you're away.
-
----
-
-## Tips
-
-- **"wrap up session"** is the most important habit. A stale NOW.md means Opus in Chat reasons from wrong premises. 30 seconds at the end of each session keeps the whole system honest.
-- **Investments are optional.** The brief and builder work without portfolio.md. Add investments when you're ready.
-- **The builder is off by default.** Enable scheduled checks in Cowork Settings → Scheduled Tasks when you're comfortable with how it works.
-
----
-
-## What this is NOT
-
-- Not a broker integration (prices come from web search, not your account)
-- Not a meeting prep tool for Microsoft/Outlook calendars (Google Calendar only)
-- Not a replacement for your own judgment on investments
+These are examples. The spine pattern works with any skills you write.
 
 ---
 
 ## Claude Code compatibility
 
-The spine files (NOW, DECISIONS, OPEN) are Google Docs, but Cowork also maintains local markdown versions in your `cowork/` folder. Claude Code can read those directly — point it at `memory/global.md` and the daily brief to give it the same context that Chat gets from Drive. A CLAUDE.md in the repo root that references these files is all you need.
+The spine docs are Google Docs, but Cowork also maintains local markdown copies in your workspace. Claude Code can read those directly. Add a `CLAUDE.md` at the root of any repo pointing at `memory/global.md` and your daily brief — Claude Code picks it up automatically at session start.
+
+---
+
+## The spine protocol
+
+If you want to implement the spine pattern without this plugin, the rules are:
+
+- `NOW` is a pointer, not a record. It holds current state only — overwrite it completely each session.
+- `DECISIONS` is append-only. Date, decision, reason — one line per entry. Never edit past entries.
+- `OPEN` is a live list. Add items when they surface, remove them when they resolve.
+- The tool that writes the spine (Cowork) and the tool that reads it (Chat) must agree on the format.
 
 ---
 
 ## License
 
-MIT. Fork it, adapt it, publish your own version.
+MIT. Fork it, adapt it, build your own spine.
