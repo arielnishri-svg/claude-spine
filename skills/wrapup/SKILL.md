@@ -63,7 +63,23 @@ Read `memory/global.md` to find the Drive file ID for OPEN.
 - Add any new open items surfaced during this session
 - Preserve all existing unresolved items
 
-## Step 5 — Append to local daily-log.md
+## Step 5 — Write local spine files
+
+Write the same content to local files so the private GitHub repo stays current for Claude Chat:
+
+**File:** `{BASE_PATH}/spine/NOW.md`
+Overwrite with the same content written to Drive in Step 2.
+
+**File:** `{BASE_PATH}/spine/DECISIONS.md`
+Append the same new decision lines added in Step 3.
+If the file does not exist yet, create it and write all decisions.
+
+**File:** `{BASE_PATH}/spine/OPEN.md`
+Overwrite with the same content written to Drive in Step 4.
+
+If the `spine/` folder does not exist, create it before writing.
+
+## Step 6 — Append to local daily-log.md
 
 Read `{BASE_PATH}/memory/daily-log.md`.
 
@@ -76,9 +92,14 @@ Key decisions: [one line — most important decision, or "None"]
 Next: [one line — highest priority next action]
 ```
 
-## Step 6 — Confirm
+## Step 7 — Confirm and prompt git push
 
-Reply with exactly: "Session wrapped. Drive spine updated. See you next time."
+Reply with exactly:
+
+"Session wrapped. Drive spine and local files updated. Run this to sync Claude Chat:
+```
+cd {BASE_PATH} && git add spine/ memory/daily-log.md && git commit -m 'Wrapup [YYYY-MM-DD]' && git push
+```"
 
 ---
 
@@ -88,4 +109,6 @@ Reply with exactly: "Session wrapped. Drive spine updated. See you next time."
 - DECISIONS.md is append-only — never edit or delete past entries.
 - OPEN.md is maintained — completed items are removed, new ones added.
 - daily-log.md is append-only — always add at the bottom.
-- If Google Drive is not connected, complete Steps 5 and 6 only, and tell the user which Drive steps were skipped.
+- Local spine files in `spine/` mirror Drive — both updated every session.
+- `git push` in the BASE_PATH repo is the step that keeps Claude Chat current.
+- If Google Drive is not connected, complete Steps 5, 6, and 7 only, and tell the user which Drive steps were skipped.
