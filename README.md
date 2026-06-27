@@ -6,7 +6,7 @@ A context-persistence pattern for Claude. Keeps your state alive when you switch
 
 ## The problem
 
-Every Claude session starts cold. Switch from Cowork to Chat, or open Claude Code in a new terminal, and you lose everything — what you were working on, what you decided, what's still open. You end up spending the first few minutes of every session re-establishing context that should already be there.
+Every Claude session starts cold. Switch from Cowork to Chat, or open Claude Code in a new terminal, and you lose everything — what you were working on, what you decided, what's still open. You spend the first few minutes of every session re-establishing context that should already be there.
 
 ---
 
@@ -22,7 +22,7 @@ Three small documents act as a shared memory layer across all Claude tools:
 
 **Cowork writes. Chat reads.**
 
-At the end of every Cowork session, the `wrap up session` skill updates all three docs — in Google Drive and in a local `spine/` folder. A private GitHub repo or a Claude Chat Project linked to these files gives Claude full context before you type a single word.
+At the end of every Cowork session, `wrap up session` updates all three docs — in Google Drive and in a local `spine/` folder. A private GitHub repo or a Claude Chat Project linked to these files gives Claude full context before you type a single word.
 
 ---
 
@@ -32,21 +32,16 @@ At the end of every Cowork session, the `wrap up session` skill updates all thre
 
 Download `claude-spine.plugin` from the [latest release](https://github.com/arielnishri-svg/claude-spine/releases/latest) and install it in Cowork.
 
-### 2. Connect your Google services
+### 2. Connect Google Drive
 
-In Cowork Settings → Connectors:
-
-- **Google Drive** — required for the spine (NOW / DECISIONS / OPEN)
-- **Gmail + Google Calendar** — required only if you want the morning brief skill
-
-The spine itself only needs Drive. Connect the others when you're ready.
+In Cowork Settings → Connectors, connect **Google Drive**. This is the only connector the spine itself requires.
 
 ### 3. Run setup
 
 Say `set up claude-spine` in a new Cowork session. The setup skill:
 - Creates your local folder structure and memory files
-- Creates the three spine docs (`NOW`, `DECISIONS`, `OPEN`) directly in your Google Drive
-- Saves the Drive file IDs to your memory so the wrapup skill can write to them automatically
+- Creates the three spine docs (`NOW`, `DECISIONS`, `OPEN`) in your Google Drive
+- Saves the Drive file IDs to memory so the wrapup skill can write to them automatically
 
 No manual doc creation needed.
 
@@ -56,34 +51,33 @@ Two options — pick one:
 
 **Option A — GitHub (recommended):**
 1. Create a private repo (e.g. `my-spine`)
-2. Push your `cowork/` folder to it
+2. Push your local spine folder to it
 3. In Claude Chat → Projects → New Project → Add content → GitHub → connect the repo
-4. Claude Chat reads the spine files from GitHub every session
+4. Claude Chat reads your spine files every session
 
 **Option B — Google Drive:**
-1. In [claude.ai](https://claude.ai) → Projects → New Project
+1. Go to [claude.ai](https://claude.ai) → Projects → New Project
 2. Add content → Google Drive → search for `NOW`, `DECISIONS`, `OPEN`
 3. Note: Drive search may not surface newly created files — open each doc in your browser first
 
 ### 5. Wrap up every session
 
-Say `wrap up session` before closing Cowork. This updates Drive, writes the local `spine/` files, and prints the git push command if you're using GitHub. This is the habit the whole system depends on. A stale `NOW` means Chat reasons from wrong premises.
+Say `wrap up session` before closing Cowork. This updates Drive, writes the local `spine/` files, and prints the git push command if you're using GitHub.
+
+This is the habit the whole system depends on. A stale `NOW` means Chat reasons from wrong premises.
 
 ---
 
 ## What ships with this plugin
 
-The plugin includes five skills as a working reference implementation:
+Two skills — the minimum required to run the spine:
 
 | Say this | What it does | Connectors needed |
 |----------|-------------|------------------|
 | `set up claude-spine` | One-time setup — folder structure, memory files, Drive spine | Drive |
 | `wrap up session` | Updates NOW / DECISIONS / OPEN + local spine/ + daily log | Drive |
-| `generate my morning brief` | Pulls Google Calendar + Gmail → structured daily brief | Gmail, Calendar |
-| `research AAPL` | Web search + analyst consensus + thesis fit → research note | Web search |
-| `check the build queue` | Picks up PRD files from a queue folder and builds them | Depends on PRD |
 
-These are examples. The spine pattern works with any skills you write.
+Everything else — morning briefs, investment research, task automation — is your layer to build on top.
 
 ---
 
@@ -102,13 +96,13 @@ Local spine files are updated by `wrap up session` and synced via `git push` —
 
 ## The spine protocol
 
-If you want to implement the spine pattern without this plugin, the rules are:
+If you want to implement this pattern without the plugin:
 
 - `NOW` is a pointer, not a record. It holds current state only — overwrite it completely each session.
-- `DECISIONS` is append-only. Date, decision, reason — one line per entry. Never edit past entries.
+- `DECISIONS` is append-only. Date, decision, reason. Never edit past entries.
 - `OPEN` is a live list. Add items when they surface, remove them when they resolve.
 - Store the Drive file IDs somewhere your wrapup skill can read them (e.g. `memory/global.md` under `## Drive spine`).
-- Keep a local mirror of the spine files and push them to a private GitHub repo — Drive search is unreliable for newly created files.
+- Keep a local mirror and push to a private GitHub repo — Drive search is unreliable for newly created files.
 - The tool that writes the spine (Cowork) and the tool that reads it (Chat) must agree on the format.
 
 ---

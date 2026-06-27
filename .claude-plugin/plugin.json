@@ -1,10 +1,10 @@
 {
   "name": "claude-spine",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "A context-persistence pattern for Claude. Keeps your state alive across Claude Cowork, Claude Chat, and Claude Code — without re-explaining anything.",
   "author": {
     "name": "Ariel Nishri",
     "homepage": "https://cogniqos.substack.com"
   },
-  "keywords": ["productivity", "context-management", "daily-brief", "investment-research", "spine"]
+  "keywords": ["productivity", "context-management", "spine", "context-persistence"]
 }
